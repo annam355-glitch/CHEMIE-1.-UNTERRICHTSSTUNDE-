@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemie – Einstieg</title>
+</head>
+
+<body>
+
+<div id="chemie-quiz-app">
+  <div class="quiz-card">
+
+    <div id="quiz-start" class="quiz-screen active">
+      <div class="quiz-badge">CHEMIE – 8. SCHULSTUFE</div>
+
+      <h1>Willkommen in der Chemie</h1>
+
+      <p class="quiz-intro">
+        Teste dein Grundwissen für deine erste Unterrichtsstunde im Fach Chemie.
+      </p>
+
+      <div class="quiz-info-box">
+        <span class="quiz-info-icon">10</span>
+        <span>
+          Du bearbeitest insgesamt zehn Aufgaben und erhältst nach jeder Antwort
+          sofort eine Rückmeldung.
+        </span>
+      </div>
+
+      <button class="quiz-main-button" onclick="startQuiz()">
+        Test starten
+      </button>
+    </div>
+
+    <div id="quiz-question" class="quiz-screen">
+      <div class="quiz-topbar">
+        <span id="question-counter">Aufgabe 1 von 10</span>
+        <span id="score-counter">0 Punkte</span>
+      </div>
+
+      <div class="quiz-progress">
+        <div id="progress-bar" class="quiz-progress-bar"></div>
+      </div>
+
+      <div class="quiz-question-label">Wähle die richtige Antwort</div>
+
+      <div id="question-sentence" class="quiz-sentence"></div>
+
+      <div id="answer-options" class="quiz-options"></div>
+
+      <div id="feedback-box" class="quiz-feedback"></div>
+
+      <button
+        id="next-button"
+        class="quiz-main-button quiz-next-button"
+        onclick="nextQuestion()"
+      >
+        Nächste Aufgabe
+      </button>
+    </div>
+
+    <div id="quiz-result" class="quiz-screen">
+      <div class="quiz-badge">AUSWERTUNG</div>
+
+      <div id="result-circle" class="result-circle">
+        <span id="result-score">0/10</span>
+      </div>
+
+      <h2 id="result-title">Geschafft!</h2>
+
+      <p id="result-text" class="result-text"></p>
+
+      <div class="result-overview">
+        <div class="result-item result-correct">
+          <span id="correct-result">0</span>
+          <small>richtig</small>
+        </div>
+
+        <div class="result-item result-wrong">
+          <span id="wrong-result">0</span>
+          <small>falsch</small>
+        </div>
+      </div>
+
+      <div id="mistake-summary" class="mistake-summary"></div>
+
+      <button class="quiz-main-button" onclick="restartQuiz()">
+        Test wiederholen
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  #chemie-quiz-app {
+    --navy: #0f1b2b;
+    --orange: #f28c28;
+    --orange-dark: #c85f0a;
+    --orange-light: #fff0df;
+    --green: #16875b;
+    --green-light: #e7f7f0;
+    --red: #c74444;
+    --red-light: #fdecec;
+    --cream: #faf8f4;
+    --white: #ffffff;
+    --gray: #667085;
+
+    width: 100%;
+    padding: 24px 14px;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--navy);
+  }
+
+  #chemie-quiz-app * {
+    box-sizing: border-box;
+  }
+
+  .quiz-card {
+    width: 100%;
+    max-width: 680px;
+    min-height: 560px;
+    margin: 0 auto;
+    padding: 38px;
+    background: var(--white);
+    border: 2px solid rgba(242, 140, 40, 0.18);
+    border-radius: 28px;
+    box-shadow: 0 18px 55px rgba(15, 27, 43, 0.12);
+  }
+
+  .quiz-screen {
+    display: none;
+  }
+
+  .quiz-screen.active {
+    display: block;
+    animation: quizFadeIn 0.35s ease;
+  }
+
+  @keyframes quizFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .quiz-badge {
+    display: inline-block;
+    margin-bottom: 18px;
+    padding: 8px 14px;
+    color: var(--orange-dark);
+    background: var(--orange-light);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .quiz-card h1,
+  .quiz-card h2 {
+    margin: 0;
+    color: var(--navy);
+    line-height: 1.15;
+  }
+
+  .quiz-card h1 {
+    font-size: clamp(30px, 6vw, 46px);
+  }
+
+  .quiz-card h2 {
+    margin-top: 22px;
+    font-size: 32px;
+    text-align: center;
+  }
+
+  .quiz-intro {
+    margin: 20px 0;
+    color: var(--gray);
+    font-size: 18px;
+    line-height: 1.65;
+  }
+
+  .quiz-info-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 28px 0;
+    padding: 18px;
+    background: var(--cream);
+    border-radius: 18px;
+    color: var(--navy);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .quiz-info-icon {
+    display: flex;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    background: var(--orange);
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .quiz-main-button {
+    width: 100%;
+    min-height: 56px;
+    padding: 15px 22px;
+    border: none;
+    border-radius: 16px;
+    color: var(--white);
+    background: linear-gradient(
+      135deg,
+      var(--orange),
+      var(--orange-dark)
+    );
+    box-shadow: 0 10px 24px rgba(200, 95, 10, 0.25);
+    font: inherit;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .quiz-main-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(200, 95, 10, 0.3);
+  }
+
+  .quiz-topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .quiz-progress {
+    width: 100%;
+    height: 10px;
+    margin: 13px 0 34px;
+    overflow: hidden;
+    background: #ebe8e2;
+    border-radius: 999px;
+  }
+
+  .quiz-progress-bar {
+    width: 10%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      var(--orange),
+      #ffb45c
+    );
+    border-radius: inherit;
+    transition: width 0.35s ease;
+  }
+
+  .quiz-question-label {
+    margin-bottom: 12px;
+    color: var(--orange-dark);
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .quiz-sentence {
+    margin-bottom: 26px;
+    padding: 23px;
+    background: var(--cream);
+    border-left: 6px solid var(--orange);
+    border-radius: 16px;
+    color: var(--navy);
+    font-size: clamp(20px, 4vw, 26px);
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .quiz-options {
+    display: grid;
+    gap: 12px;
+  }
+
+  .quiz-option {
+    width: 100%;
+    padding: 17px 18px;
+    border: 2px solid #e5e1db;
+    border-radius: 15px;
+    color: var(--navy);
+    background: var(--white);
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .quiz-option:hover:not(:disabled) {
+    border-color: var(--orange);
+    background: var(--orange-light);
+    transform: translateX(3px);
+  }
+
+  .quiz-option:disabled {
+    cursor: default;
+  }
+
+  .quiz-option.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-light);
+  }
+
+  .quiz-option.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-light);
+  }
+
+  .quiz-option.solution {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+
+  .quiz-feedback {
+    display: none;
+    margin-top: 20px;
+    padding: 17px 18px;
+    border-radius: 15px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .quiz-feedback.visible {
+    display: block;
+  }
+
+  .quiz-feedback.correct {
+    color: #0d6542;
+    background: var(--green-light);
+    border: 1px solid rgba(22, 135, 91, 0.3);
+  }
+
+  .quiz-feedback.wrong {
+    color: #9d3333;
+    background: var(--red-light);
+    border: 1px solid rgba(199, 68, 68, 0.3);
+  }
+
+  .quiz-feedback strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 17px;
+  }
+
+  .quiz-next-button {
+    display: none;
+    margin-top: 20px;
+  }
+
+  .quiz-next-button.visible {
+    display: block;
+  }
+
+  .result-circle {
+    display: flex;
+    width: 150px;
+    height: 150px;
+    margin: 12px auto 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    background: linear-gradient(
+      135deg,
+      var(--orange),
+      var(--orange-dark)
+    );
+    border: 10px solid var(--orange-light);
+    border-radius: 50%;
+    box-shadow: 0 14px 32px rgba(200, 95, 10, 0.24);
+  }
+
+  .result-circle span {
+    font-size: 35px;
+    font-weight: 900;
+  }
+
+  .result-text {
+    max-width: 500px;
+    margin: 14px auto 26px;
+    color: var(--gray);
+    font-size: 17px;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .result-overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .result-item {
+    padding: 18px;
+    border-radius: 17px;
+    text-align: center;
+  }
+
+  .result-item span {
+    display: block;
+    font-size: 30px;
+    font-weight: 900;
+  }
+
+  .result-item small {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .result-correct {
+    color: var(--green);
+    background: var(--green-light);
+  }
+
+  .result-wrong {
+    color: var(--red);
+    background: var(--red-light);
+  }
+
+  .mistake-summary {
+    margin-bottom: 22px;
+  }
+
+  .mistake-summary:empty {
+    display: none;
+  }
+
+  .mistake-summary h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+  }
+
+  .mistake-item {
+    margin-bottom: 9px;
+    padding: 13px 15px;
+    background: var(--cream);
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 600px) {
+    #chemie-quiz-app {
+      padding: 10px;
+    }
+
+    .quiz-card {
+      min-height: auto;
+      padding: 25px 18px;
+      border-radius: 22px;
+    }
+
+    .quiz-info-box {
+      align-items: flex-start;
+    }
+
+    .quiz-sentence {
+      padding: 19px 16px;
+    }
+
+    .quiz-option {
+      padding: 15px;
+    }
+  }
+</style>
+
+<script>
+  const quizQuestions = [
+    {
+      question: "Womit beschäftigt sich die Chemie hauptsächlich?",
+      options: [
+        "Mit Stoffen und ihren Eigenschaften und Veränderungen",
+        "Nur mit Planeten und Sternen",
+        "Nur mit der Bewegung von Fahrzeugen",
+        "Nur mit Lebewesen und ihren Organen",
+        "Nur mit dem Wetter"
+      ],
+      answer: "Mit Stoffen und ihren Eigenschaften und Veränderungen",
+      explanation:
+        "Die Chemie untersucht Stoffe, ihre Eigenschaften, ihren Aufbau und die Veränderungen, die bei chemischen Reaktionen entstehen."
+    },
+
+    {
+      question: "Welche Beobachtung ist ein typisches Beispiel für eine chemische Veränderung?",
+      options: [
+        "Ein Eiswürfel schmilzt",
+        "Ein Stück Papier wird zerschnitten",
+        "Ein Stück Eisen rostet",
+        "Wasser wird in ein anderes Glas geschüttet",
+        "Ein Ball wird zusammengedrückt"
+      ],
+      answer: "Ein Stück Eisen rostet",
+      explanation:
+        "Beim Rosten entsteht aus Eisen unter anderem Eisenoxid. Es bilden sich also neue Stoffe – ein Kennzeichen einer chemischen Veränderung."
+    },
+
+    {
+      question: "Was ist ein Stoff im chemischen Sinn?",
+      options: [
+        "Nur ein Gegenstand aus einem Labor",
+        "Material mit bestimmten charakteristischen Eigenschaften",
+        "Immer ein flüssiger Stoff",
+        "Nur etwas, das man sehen kann",
+        "Eine bestimmte chemische Reaktion"
+      ],
+      answer: "Material mit bestimmten charakteristischen Eigenschaften",
+      explanation:
+        "In der Chemie bezeichnet man Materialien wie Wasser, Sauerstoff, Eisen oder Zucker als Stoffe. Stoffe besitzen charakteristische Eigenschaften."
+    },
+
+    {
+      question: "Was unterscheidet Chemie und Physik besonders?",
+      options: [
+        "Physik untersucht nur Flüssigkeiten.",
+        "Chemie beschäftigt sich nur mit Pflanzen.",
+        "Physik gibt es nur im Labor.",
+        "Chemie untersucht besonders Stoffe und ihre Umwandlungen.",
+        "Zwischen Chemie und Physik gibt es überhaupt keinen Unterschied."
+      ],
+      answer: "Chemie untersucht besonders Stoffe und ihre Umwandlungen.",
+      explanation:
+        "Chemie und Physik überschneiden sich in vielen Bereichen. Ein wichtiger Schwerpunkt der Chemie sind jedoch Stoffe, ihre Eigenschaften und ihre Umwandlungen."
+    },
+
+    {
+      question: "Warum ist eine Schutzbrille beim Experimentieren wichtig?",
+      options: [
+        "Damit man besser sehen kann",
+        "Damit die Haare nicht nass werden",
+        "Damit die Augen vor möglichen Gefahren geschützt sind",
+        "Damit Experimente schneller ablaufen",
+        "Damit Chemikalien ihre Farbe behalten"
+      ],
+      answer: "Damit die Augen vor möglichen Gefahren geschützt sind",
+      explanation:
+        "Eine Schutzbrille schützt die Augen beispielsweise vor Spritzern und anderen Gefahren beim Experimentieren."
+    },
+
+    {
+      question: "Was solltest du tun, wenn beim Experimentieren eine Chemikalie verschüttet wird?",
+      options: [
+        "Sofort selbst mit bloßen Händen wegwischen",
+        "Nichts sagen und weiterarbeiten",
+        "Die Chemikalie probieren",
+        "Die verschüttete Flüssigkeit mit Wasser trinken",
+        "Die Lehrkraft sofort informieren"
+      ],
+      answer: "Die Lehrkraft sofort informieren",
+      explanation:
+        "Verschüttete Chemikalien können gefährlich sein. Deshalb informierst du sofort die Lehrkraft und befolgst deren Anweisungen."
+    },
+
+    {
+      question: "Welche Verhaltensweise ist im Chemieraum besonders wichtig?",
+      options: [
+        "Chemikalien niemals eigenständig probieren",
+        "Während des Experiments essen",
+        "Mit Laborgeräten herumwerfen",
+        "An jeder Chemikalie direkt riechen",
+        "Experimente ohne Anleitung verändern"
+      ],
+      answer: "Chemikalien niemals eigenständig probieren",
+      explanation:
+        "Chemikalien dürfen niemals probiert werden. Auch scheinbar harmlose Stoffe können gesundheitsschädlich sein."
+    },
+
+    {
+      question: "Welche Aussage über chemische Reaktionen ist richtig?",
+      options: [
+        "Bei jeder Reaktion verschwindet Materie vollständig.",
+        "Bei einer chemischen Reaktion können neue Stoffe entstehen.",
+        "Chemische Reaktionen finden nur bei hohen Temperaturen statt.",
+        "Chemische Reaktionen sind immer sichtbar.",
+        "Eine chemische Reaktion verändert niemals Stoffe."
+      ],
+      answer: "Bei einer chemischen Reaktion können neue Stoffe entstehen.",
+      explanation:
+        "Bei einer chemischen Reaktion werden Ausgangsstoffe in neue Stoffe mit anderen Eigenschaften umgewandelt."
+    },
+
+    {
+      question: "Warum soll man im Chemieunterricht Versuchsanleitungen genau beachten?",
+      options: [
+        "Damit das Experiment möglichst lange dauert",
+        "Damit man möglichst viele Chemikalien verwendet",
+        "Damit man keine Ergebnisse erhält",
+        "Damit der Versuch sicher und sinnvoll durchgeführt werden kann",
+        "Damit man die Geräte nicht kennenlernen muss"
+      ],
+      answer: "Damit der Versuch sicher und sinnvoll durchgeführt werden kann",
+      explanation:
+        "Versuchsanleitungen enthalten wichtige Arbeitsschritte und Sicherheitsregeln. Sie helfen dabei, Experimente zuverlässig und sicher durchzuführen."
+    },
+
+    {
+      question: "Welche Aussage beschreibt die Bedeutung der Chemie im Alltag am besten?",
+      options: [
+        "Chemie spielt nur in Forschungslaboren eine Rolle.",
+        "Chemie betrifft ausschließlich gefährliche Stoffe.",
+        "Chemie hat mit unserem Alltag nichts zu tun.",
+        "Chemie wird nur bei der Herstellung von Medikamenten gebraucht.",
+        "Chemie begegnet uns beispielsweise bei Lebensmitteln, Reinigung, Materialien und Energie."
+      ],
+      answer:
+        "Chemie begegnet uns beispielsweise bei Lebensmitteln, Reinigung, Materialien und Energie.",
+      explanation:
+        "Chemie ist Teil unseres Alltags. Viele Produkte und Vorgänge rund um Lebensmittel, Reinigung, Materialien, Energie und Umwelt haben einen chemischen Hintergrund."
+    }
+  ];
+
+  let currentQuestion = 0;
+  let score = 0;
+  let answered = false;
+  let mistakes = [];
+
+  function showScreen(screenId) {
+    document
+      .querySelectorAll("#chemie-quiz-app .quiz-screen")
+      .forEach(screen => screen.classList.remove("active"));
+
+    document.getElementById(screenId).classList.add("active");
+  }
+
+  function startQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    answered = false;
+    mistakes = [];
+
+    showScreen("quiz-question");
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    answered = false;
+
+    const question = quizQuestions[currentQuestion];
+    const questionNumber = currentQuestion + 1;
+
+    document.getElementById("question-counter").textContent =
+      `Aufgabe ${questionNumber} von ${quizQuestions.length}`;
+
+    document.getElementById("score-counter").textContent =
+      `${score} ${score === 1 ? "Punkt" : "Punkte"}`;
+
+    document.getElementById("progress-bar").style.width =
+      `${(questionNumber / quizQuestions.length) * 100}%`;
+
+    document.getElementById("question-sentence").textContent =
+      question.question;
+
+    const optionsContainer =
+      document.getElementById("answer-options");
+
+    optionsContainer.innerHTML = "";
+
+    question.options.forEach((choice, index) => {
+      const button = document.createElement("button");
+      button.className = "quiz-option";
+
+      const letter = String.fromCharCode(65 + index);
+      button.textContent = `${letter}: ${choice}`;
+
+      button.onclick = () =>
+        selectAnswer(choice, button);
+
+      optionsContainer.appendChild(button);
+    });
+
+    const feedbackBox =
+      document.getElementById("feedback-box");
+
+    feedbackBox.className = "quiz-feedback";
+    feedbackBox.innerHTML = "";
+
+    const nextButton =
+      document.getElementById("next-button");
+
+    nextButton.classList.remove("visible");
+
+    nextButton.textContent =
+      currentQuestion === quizQuestions.length - 1
+        ? "Auswertung anzeigen"
+        : "Nächste Aufgabe";
+  }
+
+  function selectAnswer(selectedAnswer, selectedButton) {
+    if (answered) {
+      return;
+    }
+
+    answered = true;
+
+    const question = quizQuestions[currentQuestion];
+    const isCorrect =
+      selectedAnswer === question.answer;
+
+    const buttons = document.querySelectorAll(
+      "#answer-options .quiz-option"
+    );
+
+    buttons.forEach(button => {
+      button.disabled = true;
+
+      const buttonText =
+        button.textContent.substring(3);
+
+      if (buttonText === question.answer) {
+        button.classList.add("solution");
+      }
+    });
+
+    const feedbackBox =
+      document.getElementById("feedback-box");
+
+    if (isCorrect) {
+      score++;
+
+      selectedButton.classList.add("correct");
+
+      feedbackBox.className =
+        "quiz-feedback visible correct";
+
+      feedbackBox.innerHTML =
+        `<strong>Richtig!</strong>${question.explanation}`;
+    } else {
+      selectedButton.classList.add("wrong");
+
+      feedbackBox.className =
+        "quiz-feedback visible wrong";
+
+      feedbackBox.innerHTML =
+        `<strong>Leider nicht richtig.</strong>
+         Die richtige Antwort lautet:
+         ${question.answer}.
+         ${question.explanation}`;
+
+      mistakes.push({
+        question: question.question,
+        correctAnswer: question.answer
+      });
+    }
+
+    document.getElementById("score-counter").textContent =
+      `${score} ${score === 1 ? "Punkt" : "Punkte"}`;
+
+    document
+      .getElementById("next-button")
+      .classList.add("visible");
+  }
+
+  function nextQuestion() {
+    if (!answered) {
+      return;
+    }
+
+    currentQuestion++;
+
+    if (currentQuestion < quizQuestions.length) {
+      renderQuestion();
+
+      window.scrollTo({
+        top:
+          document.getElementById("chemie-quiz-app")
+            .offsetTop,
+        behavior: "smooth"
+      });
+    } else {
+      showResults();
+    }
+  }
+
+  function showResults() {
+    showScreen("quiz-result");
+
+    const wrongAnswers =
+      quizQuestions.length - score;
+
+    const percentage = Math.round(
+      (score / quizQuestions.length) * 100
+    );
+
+    document.getElementById("result-score").textContent =
+      `${score}/${quizQuestions.length}`;
+
+    document.getElementById("correct-result").textContent =
+      score;
+
+    document.getElementById("wrong-result").textContent =
+      wrongAnswers;
+
+    let title = "";
+    let text = "";
+
+    if (score === 10) {
+      title = "Ausgezeichnet!";
+      text =
+        "Du hast alle Aufgaben richtig gelöst und bist sehr gut in das Thema Chemie gestartet.";
+    } else if (score >= 8) {
+      title = "Sehr gut!";
+      text =
+        `Du hast ${percentage} Prozent der Aufgaben richtig gelöst. Deine Grundlagen in Chemie sind schon sehr sicher.`;
+    } else if (score >= 6) {
+      title = "Gut gemacht!";
+      text =
+        `Du hast ${percentage} Prozent der Aufgaben richtig gelöst. Wiederhole noch einmal die wichtigsten Grundlagen und Sicherheitsregeln.`;
+    } else {
+      title = "Übe noch einmal!";
+      text =
+        `Du hast ${percentage} Prozent der Aufgaben richtig gelöst. Wiederhole die Grundlagen der Chemie und die Regeln im Chemieraum.`;
+    }
+
+    document.getElementById("result-title").textContent =
+      title;
+
+    document.getElementById("result-text").textContent =
+      text;
+
+    const mistakeSummary =
+      document.getElementById("mistake-summary");
+
+    mistakeSummary.innerHTML = "";
+
+    if (mistakes.length > 0) {
+      const heading =
+        document.createElement("h3");
+
+      heading.textContent =
+        "Diese Aufgaben solltest du wiederholen:";
+
+      mistakeSummary.appendChild(heading);
+
+      mistakes.forEach(mistake => {
+        const item =
+          document.createElement("div");
+
+        item.className = "mistake-item";
+
+        item.innerHTML =
+          `<strong>${mistake.question}</strong><br>
+           Richtige Antwort: ${mistake.correctAnswer}`;
+
+        mistakeSummary.appendChild(item);
+      });
+    }
+
+    window.scrollTo({
+      top:
+        document.getElementById("chemie-quiz-app")
+          .offsetTop,
+      behavior: "smooth"
+    });
+  }
+
+  function restartQuiz() {
+    startQuiz();
+
+    window.scrollTo({
+      top:
+        document.getElementById("chemie-quiz-app")
+          .offsetTop,
+      behavior: "smooth"
+    });
+  }
+</script>
+
+</body>
+</html>
